@@ -1,0 +1,7 @@
+[tele-rss]
+api_id = <your TG api_id>
+api_hash = <your TG api_hash>
+ignore_list = list,of,ignored,channels,or,their,id,comma,separated
+use_ssl = 1 # 1 for yes or 0 for no
+cert_file = cacert.pem # mandatory if use_ssl = 1
+key_file = privkey.pem # mandatory if use_ssl = 1
