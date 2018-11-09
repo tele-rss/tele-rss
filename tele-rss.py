@@ -1,13 +1,17 @@
-from telethon import TelegramClient
+from telethon import TelegramClient, sync
 from rfeed import *
-from bottle import route, ServerAdapter
+from bottle import route, auth_basic
 import bottle
 import configparser
+import hashlib
 
 ignore_list = []
 cert_file = None
 key_file = None
 client = None
+use_auth = False
+login = None
+password_hash = None
 
 
 class CherootServer(bottle.ServerAdapter):
@@ -31,7 +35,16 @@ class CherootServer(bottle.ServerAdapter):
             server.stop()
 
 
+def check_user(user, pw):
+    """Check login credentials, used by auth_basic decorator."""
+    if use_auth:
+        return bool(user == login and hashlib.sha256(pw.encode('utf-8')).hexdigest() == password_hash)
+    else:
+        return True
+
+
 @route('/rss-list')
+@auth_basic(check_user)
 def give_rss_list():
     titles=''
     for dialog in client.iter_dialogs():
@@ -46,6 +59,7 @@ def give_rss_list():
 
 
 @route('/rss/<channel_name>')
+@auth_basic(check_user)
 def give_rss(channel_name):
     channel_dialog = None
     feed_items = []
@@ -138,6 +152,11 @@ try:
         if (cert_file is None) or (key_file is None):
             print("Cert file or key file are not set in config file")
             exit(-2)
+
+    if config_tele_rss['use_auth'] == '1':
+        use_auth = True
+        login = config_tele_rss['login']
+        password_hash = config_tele_rss['password_hash']
 
 except:
     print("Bad config file")
