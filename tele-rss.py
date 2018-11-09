@@ -12,6 +12,9 @@ client = None
 use_auth = False
 login = None
 password_hash = None
+hostname = 'localhost'
+port = '8080'
+protocol = 'http'
 
 
 class CherootServer(bottle.ServerAdapter):
@@ -43,10 +46,28 @@ def check_user(user, pw):
         return True
 
 
+@bottle.route('/rss-list.opml')
+@auth_basic(check_user)
+@bottle.view('opml')
+def opml():
+    name = []
+    url = []
+    for i, dialog in enumerate(client.iter_dialogs()):
+        if dialog.is_channel:
+            if dialog.entity.username is None:
+                dialog_name = str(dialog.id)
+            else:
+                dialog_name = dialog.entity.username
+            if dialog_name not in ignore_list:
+                url.append(protocol + "://" + hostname + ":" + port + "/rss/" + dialog_name)
+                name.append(dialog.title)
+    return dict(name=name, url=url)
+
+
 @route('/rss-list')
 @auth_basic(check_user)
 def give_rss_list():
-    titles=''
+    titles = ''
     for dialog in client.iter_dialogs():
         if dialog.is_channel:
             if dialog.entity.username is None:
@@ -145,8 +166,11 @@ try:
     api_id = int(config_tele_rss['api_id'])
     api_hash = config_tele_rss['api_hash']
     ignore_list = config_tele_rss['ignore_list'].split(',')
+    hostname = config_tele_rss['hostname']
+    port = config_tele_rss['port']
 
     if config_tele_rss['use_ssl'] == '1':
+        protocol = 'https'
         cert_file = config_tele_rss['cert_file']
         key_file = config_tele_rss['key_file']
         if (cert_file is None) or (key_file is None):
@@ -170,7 +194,7 @@ except ConnectionError:
     print("Cannot connect to TG")
     exit(-3)
 
-bottle.run(host='localhost', port=8080, server=CherootServer, certfile=cert_file, keyfile=key_file)
+bottle.run(host=hostname, port=port, server=CherootServer, certfile=cert_file, keyfile=key_file)
 
 client.run_until_disconnected()
 

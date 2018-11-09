@@ -1,7 +1,15 @@
 [tele-rss]
 api_id = <your TG api_id>
 api_hash = <your TG api_hash>
+
+hostname = localhost
+port = 8080
+
 ignore_list = list,of,ignored,channels,or,their,id,comma,separated
-use_ssl = 1 # 1 for yes or 0 for no
+use_ssl = 1
 cert_file = cacert.pem # mandatory if use_ssl = 1
 key_file = privkey.pem # mandatory if use_ssl = 1
+
+use_auth = 1
+login = yourlogin
+password_hash = sha256_encoded_password
