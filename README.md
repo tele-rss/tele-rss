@@ -7,15 +7,14 @@ so no need to add bots to channels.
 
 ## Features
 
-- HTTP and HTTPS access
-- each channel available at /rss/channel-name
-- list of channels available on /rss-list
-- OPML available at /rss-list.opml
+- each channel available at `/rss/<channel-name>`
+- list of channels available on `/rss-list`
+- OPML available at `/rss-list.opml`
 - Configurable via ini file
+- HTTP and HTTPS access
+- HTTP basic auth
 
-## First start
-
-### Dependencies
+## Dependencies
 
 Require Python 3.6 and higher and following libraries
 
@@ -25,7 +24,7 @@ Require Python 3.6 and higher and following libraries
 - cheroot
 - rfeed
 
-### Initial setup and first steps
+## First start
 
 - Get your API ID and hash from 
 https://my.telegram.org/auth
@@ -52,7 +51,7 @@ Uncomment section in ini file
 ignore_list = list,of,ignored,channels,or,their,id,comma,separated
 ```
 
-List item can be taken from link /rss/<channel_name_or_id> when you click on channel link from /rss-list page
+List item can be taken from link `/rss/<channel_name_or_id>` when you click on channel link from `/rss-list` page
 
 ### Hostname/port change
 
@@ -90,5 +89,5 @@ password_hash = <sha256 encoded password>
 ```
 
 Put desired login in `login` parameter and sha256 hash of password to `password_hash` parameter.
-All server endpoints will be protected by this login/password
+`/rss-list`, `/rss-list.opml` and `rss/<channel>` server endpoints will be protected by this login/password
 
