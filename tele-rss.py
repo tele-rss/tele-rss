@@ -5,17 +5,21 @@ import bottle
 import configparser
 import hashlib
 
-ignore_list = []
-cert_file = None
-key_file = None
 client = None
-use_auth = False
-login = None
-password_hash = None
-hostname = 'localhost'
-port = '8080'
-protocol = 'http'
 
+config = {
+    'ignore_list': [],
+    'cert_file': None,
+    'key_file': None,
+    'use_auth': False,
+    'login': None,
+    'password_hash': None,
+    'hostname': 'localhost',
+    'port': '8080',
+    'protocol': 'http',
+    'api_hash': None,
+    'api_id': None
+}
 
 class CherootServer(bottle.ServerAdapter):
     def run(self, handler):  # pragma: no cover
@@ -27,6 +31,7 @@ class CherootServer(bottle.ServerAdapter):
         certfile = self.options.pop('certfile', None)
         keyfile = self.options.pop('keyfile', None)
         chainfile = self.options.pop('chainfile', None)
+
         server = wsgi.Server(**self.options)
         if certfile and keyfile:
             server.ssl_adapter = builtin.BuiltinSSLAdapter(
@@ -40,8 +45,8 @@ class CherootServer(bottle.ServerAdapter):
 
 def check_user(user, pw):
     """Check login credentials, used by auth_basic decorator."""
-    if use_auth:
-        return bool(user == login and hashlib.sha256(pw.encode('utf-8')).hexdigest() == password_hash)
+    if config['use_auth']:
+        return bool(user == config['login'] and hashlib.sha256(pw.encode('utf-8')).hexdigest() == config['password_hash'])
     else:
         return True
 
@@ -52,14 +57,14 @@ def check_user(user, pw):
 def opml():
     name = []
     url = []
-    for i, dialog in enumerate(client.iter_dialogs()):
+    for dialog in client.iter_dialogs():
         if dialog.is_channel:
             if dialog.entity.username is None:
                 dialog_name = str(dialog.id)
             else:
                 dialog_name = dialog.entity.username
-            if dialog_name not in ignore_list:
-                url.append(protocol + "://" + hostname + ":" + port + "/rss/" + dialog_name)
+            if dialog_name not in config['ignore_list']:
+                url.append(f"{config['protocol']}://{config['hostname']}:{config['port']}/rss/{dialog_name}")
                 name.append(dialog.title)
     return dict(name=name, url=url)
 
@@ -74,8 +79,8 @@ def give_rss_list():
                 dialog_name = str(dialog.id)
             else:
                 dialog_name = dialog.entity.username
-            if dialog_name not in ignore_list:
-                titles += '<br/><a href="/rss/' + dialog_name + '">' + dialog.title + '</a>: ' + str(dialog.unread_count) + '\n'
+            if dialog_name not in config['ignore_list']:
+                titles += f'<br/><a href="/rss/{dialog_name}">{dialog.title}</a>: {str(dialog.unread_count)}\n'
     return titles
 
 
@@ -156,46 +161,55 @@ def get_feed_item(message):
     return feed_item
 
 
-api_hash = None
-api_id = None
+def read_config():
+    try:
+        configfile = configparser.ConfigParser()
+        configfile.read('tele-rss.ini')
+        config_tele_rss = configfile['tele-rss']
 
-try:
-    config = configparser.ConfigParser()
-    config.read('tele-rss.ini')
-    config_tele_rss = config['tele-rss']
-    api_id = int(config_tele_rss['api_id'])
-    api_hash = config_tele_rss['api_hash']
-    ignore_list = config_tele_rss['ignore_list'].split(',')
-    hostname = config_tele_rss['hostname']
-    port = config_tele_rss['port']
+        config['api_id'] = int(config_tele_rss['api_id'])
+        config['api_hash'] = config_tele_rss['api_hash']
+        config['ignore_list'] = config_tele_rss['ignore_list'].split(',')
+        config['hostname'] = config_tele_rss['hostname']
+        config['port'] = config_tele_rss['port']
 
-    if config_tele_rss['use_ssl'] == '1':
-        protocol = 'https'
-        cert_file = config_tele_rss['cert_file']
-        key_file = config_tele_rss['key_file']
-        if (cert_file is None) or (key_file is None):
-            print("Cert file or key file are not set in config file")
-            exit(-2)
+        if config_tele_rss['use_ssl'] == '1':
+            config['protocol'] = 'https'
+            config['cert_file'] = config_tele_rss['cert_file']
+            config['key_file'] = config_tele_rss['key_file']
+            if (config['cert_file'] is None) or (config['key_file'] is None):
+                print("Cert file or key file are not set in config file")
+                exit(-2)
 
-    if config_tele_rss['use_auth'] == '1':
-        use_auth = True
-        login = config_tele_rss['login']
-        password_hash = config_tele_rss['password_hash']
+        if config_tele_rss['use_auth'] == '1':
+            config['use_auth'] = True
+            config['login'] = config_tele_rss['login']
+            config['password_hash'] = config_tele_rss['password_hash']
 
-except:
-    print("Bad config file")
-    exit(-1)
+    except:
+        print("Bad config file")
+        exit(-1)
 
-try:
-    client = TelegramClient('session_name', api_id, api_hash)
-    client.start()
 
-except ConnectionError:
-    print("Cannot connect to TG")
-    exit(-3)
+def run():
+    try:
+        global client
+        client = TelegramClient('session_name', config['api_id'], config['api_hash'])
+        client.start()
 
-bottle.run(host=hostname, port=port, server=CherootServer, certfile=cert_file, keyfile=key_file)
+    except ConnectionError:
+        print("Cannot connect to TG")
+        exit(-3)
 
-client.run_until_disconnected()
+    bottle.run(host=config['hostname'],
+               port=config['port'],
+               server=CherootServer,
+               certfile=config['cert_file'],
+               keyfile=config['key_file'])
 
+    client.run_until_disconnected()
+
+
+read_config()
+run()
 
