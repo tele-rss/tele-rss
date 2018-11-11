@@ -1,15 +1,22 @@
 [tele-rss]
+
+# Mandatory
 api_id = <your TG api_id>
 api_hash = <your TG api_hash>
 
-hostname = localhost
-port = 8080
+# Optional. Default localhost:8080
+# hostname = localhost
+# port = 8080
 
-ignore_list = list,of,ignored,channels,or,their,id,comma,separated
-use_ssl = 1
-cert_file = cacert.pem # mandatory if use_ssl = 1
-key_file = privkey.pem # mandatory if use_ssl = 1
+# Optional. Default empty list
+# ignore_list = list,of,ignored,channels,or,their,id,comma,separated
 
-use_auth = 1
-login = yourlogin
-password_hash = sha256_encoded_password
+# Optional. Default no SSL
+# use_ssl = 1
+# cert_file = cacert.pem # mandatory if use_ssl = 1
+# key_file = privkey.pem # mandatory if use_ssl = 1
+
+# Optional. Default no auth
+# use_auth = 1
+# login = <your login>
+# password_hash = <sha256 encoded password>

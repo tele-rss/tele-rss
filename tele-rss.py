@@ -169,11 +169,17 @@ def read_config():
 
         config['api_id'] = int(config_tele_rss['api_id'])
         config['api_hash'] = config_tele_rss['api_hash']
-        config['ignore_list'] = config_tele_rss['ignore_list'].split(',')
-        config['hostname'] = config_tele_rss['hostname']
-        config['port'] = config_tele_rss['port']
 
-        if config_tele_rss['use_ssl'] == '1':
+        if 'ignore_list' in config_tele_rss:
+            config['ignore_list'] = config_tele_rss['ignore_list'].split(',')
+
+        if 'hostname' in config_tele_rss:
+            config['hostname'] = config_tele_rss['hostname']
+
+        if 'port' in config_tele_rss:
+            config['port'] = config_tele_rss['port']
+
+        if ('use_ssl' in config_tele_rss) and (config_tele_rss['use_ssl'] == '1'):
             config['protocol'] = 'https'
             config['cert_file'] = config_tele_rss['cert_file']
             config['key_file'] = config_tele_rss['key_file']
@@ -181,13 +187,13 @@ def read_config():
                 print("Cert file or key file are not set in config file")
                 exit(-2)
 
-        if config_tele_rss['use_auth'] == '1':
+        if ('use_auth' in config_tele_rss) and (config_tele_rss['use_auth'] == '1'):
             config['use_auth'] = True
             config['login'] = config_tele_rss['login']
             config['password_hash'] = config_tele_rss['password_hash']
 
-    except:
-        print("Bad config file")
+    except Exception as e:
+        print("Bad config file " + str(e))
         exit(-1)
 
 
