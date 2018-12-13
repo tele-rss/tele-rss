@@ -16,6 +16,8 @@ config = {
     'password_hash': None,
     'hostname': 'localhost',
     'port': '8080',
+    'external_hostname': 'localhost',
+    'external_port': '8080',
     'protocol': 'http',
     'api_hash': None,
     'api_id': None
@@ -64,7 +66,7 @@ def opml():
             else:
                 dialog_name = dialog.entity.username
             if dialog_name not in config['ignore_list']:
-                url.append(f"{config['protocol']}://{config['hostname']}:{config['port']}/rss/{dialog_name}")
+                url.append(f"{config['protocol']}://{config['external_hostname']}:{config['external_port']}/rss/{dialog_name}")
                 name.append(dialog.title)
     return dict(name=name, url=url)
 
@@ -175,9 +177,17 @@ def read_config():
 
         if 'hostname' in config_tele_rss:
             config['hostname'] = config_tele_rss['hostname']
+            config['external_hostname'] = config_tele_rss['hostname']
 
         if 'port' in config_tele_rss:
             config['port'] = config_tele_rss['port']
+            config['external_port'] = config_tele_rss['port']
+
+        if 'external_hostname' in config_tele_rss:
+            config['external_hostname'] = config_tele_rss['external_hostname']
+
+        if 'external_port' in config_tele_rss:
+            config['external_port'] = config_tele_rss['external_port']
 
         if ('use_ssl' in config_tele_rss) and (config_tele_rss['use_ssl'] == '1'):
             config['protocol'] = 'https'

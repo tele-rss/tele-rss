@@ -8,6 +8,10 @@ api_hash = <your TG api_hash>
 # hostname = localhost
 # port = 8080
 
+# Optional. Default localhost:8080
+# external_hostname = localhost
+# external_port = 8080
+
 # Optional. Default empty list
 # ignore_list = list,of,ignored,channels,or,their,id,comma,separated
 
