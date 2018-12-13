@@ -64,6 +64,18 @@ port = 8080
 
 and set needed hostname and port to serve
 
+### External Hostname/port change
+
+Uncomment section in ini file
+
+```
+external_hostname = localhost
+external_port = 8080
+```
+
+and set needed hostname and port to put into OPML file feeds URL. Parameters are needed if external host/port are 
+different from serving hostname/port - e.g. in case of port forwarding through NAT.
+
 ### SSL/HTTPS
 
 Get your certificate and private key files (self-signed or from SSL provider). Then
