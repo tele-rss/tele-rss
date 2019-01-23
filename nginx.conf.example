@@ -1,0 +1,21 @@
+user  nobody;
+worker_processes  1;
+
+events {
+    worker_connections  1024;
+}
+
+http {
+    server {
+        listen       80;
+
+        location / {
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_pass https://<where_tele_rss_is_installed>;
+            proxy_set_header Authorization "Basic <Base64-endode of string username:password>";
+            proxy_pass_header  Authorization;
+        }
+    }
+}

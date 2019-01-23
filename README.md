@@ -103,3 +103,7 @@ password_hash = <sha256 encoded password>
 Put desired login in `login` parameter and sha256 hash of password to `password_hash` parameter.
 `/rss-list`, `/rss-list.opml` and `rss/<channel>` server endpoints will be protected by this login/password
 
+If your RSS client do not support authentication, but you still want to use it for security reasons - you can use nginx
+installed on localhost as proxy. Sample configuration file is provided as nginx.conf.example. tele-rss URL have to be put
+to proxy_pass parameter and proxy_set_header Authorization should contain Base64 encode of string username:password
+(: character is mandatory). Secure your config file and allow connections to nginx only from localhost.
